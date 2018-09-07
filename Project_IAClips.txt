@@ -1,0 +1,96 @@
+(deffacts faits-initiaux
+	(animal okapi)
+	(animal tenrec)
+	(jouet balle)
+	(jouet ficelle)
+	(jouet cabane)
+	(nourriture croquettes)
+	(nourriture eau)
+	(nourriture biscuit)
+)
+
+(deffacts faits-initiaux
+	(force okapi 5)
+	(intelligence okapi 1)
+	(moral okapi 3)
+	(seuil_force okapi 32)
+	
+	(force tenrec 2)
+	(intelligence tenrec 5)
+	(moral tenrec 1)
+	(seuil_force tenrec 20)
+	
+	(jouet okapi ficelle)
+	(jouet tenrec cabane)
+	
+	(amusement ficelle 10)
+	(amusement cabane 10)
+	
+	(apport croquettes 20)
+	(apport eau 15)
+	(apport biscuit 20)
+)
+
+
+(defrule se_nourrir_1
+	?f<-(apport ?x ?y)
+	?p<-(force ?a ?b)	
+=>
+	(retract ?p)
+	(assert (force ?a (+ ?b ?y)))
+	(retract ?f)
+)
+
+
+(defrule se_nourrir_2a
+	?f<-(apport ?x ?y)
+	?p<-(force ?a ?b)	
+	?t<- (seuil_force ?a ?s)
+	(test(<= (+ ?y ?b) ?s))
+=>
+	(retract ?p)
+	(assert (force ?a (+ ?b ?y)))
+	(retract ?f)
+)
+
+
+(defrule se_nourrir_2b
+	?f<-(apport ?x ?y)
+	?p<-(force ?a ?b)	
+	?t<- (seuil_force ?a ?s)
+	
+=>
+	if(neq seuil_force ?a ?s)then
+		(bind ?e (+ ?b ?y))
+		(if(> ?e ?s)then
+			(retract ?f)
+			(retract ?p)
+			(assert(apport ?x(- ?e ?s)))
+		else
+			(retract ?p)
+			(assert (force ?a (+ ?b ?y)))
+			(retract ?f)
+		)
+	)
+
+
+(defrule jouer_1
+	?g <- (moral ?x ?y)
+	?w <- (amusement ?d ?p)
+	(test(>= ?p 2))
+=>
+
+	(retract ?g)
+	(assert(moral ?x (+ ?y ?p)))
+	(retract ?w)
+	(assert(amusement ?d(- ?p 2)))
+)
+	
+
+(defrule plus_faim
+	?v<- (force ?a ?b)
+	?c<- (seuil_force ?a ?s)
+=>
+	if(eq ?b ?s)then
+		(printout  "Je n'ai plus faim")
+	)
